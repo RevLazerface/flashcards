@@ -40,6 +40,9 @@ def main():
         elif task == 'CHANGE':
             subject = choose_subject()
             continue
+        elif task == "CREATE":
+            create_subject()
+            continue
         elif task == "EXIT":
             sys.exit("\nThat was gorgeous, you're gorgeous, stay gorgeous.\n")
         else:
@@ -114,8 +117,6 @@ def run_test(subject):
 
 def add_card(subject):
     while True:
-        #Load empty card dict and load full list of dicts into variable
-        card = {}
         try:
             with open(subject, mode='r') as csv_file:
                 csv_reader = csv.DictReader(csv_file)
@@ -127,35 +128,9 @@ def add_card(subject):
         fields = list(keys)
         fields.remove('card_title')
 
-        # Collect inputs for each field
-        # NOTE This is the only section of the program that takes unrestricted user input. If the user wants to not follow instructions and make a dumb card, that's on them!
+        # Run create_card to collect inputs for each field
         print("\nComplete the prompts to add your new flashcard!\nFor fields with multiple values, input all values at once in a list separated by commas (Example: blue, green, red, etc...)\n(WARNING: Any input separated by commas will count each side of the comma as separate entries, use commas with caution!)")
-        card["card_title"] = input("Card Title: ").strip().lower()
-        retry = False
-        for field in fields:
-            value = input(f"{string.capwords(field)}: ")
-            # ERROR CHECKING FOR INPUT
-            if "+++" in value:
-                print("I didn't warn you because I didn't think this would come up, but please don't include '+++' in your entry, it jams me up good")
-                retry = True
-                break
-            elif value == "":
-                print("Please don't leave any selection blank, input 'none' instead")
-                retry = True
-                break
-
-            # Handle multi-value entries by storing them all in a single string separated by a "+++"
-            values = list(value.split(","))
-            entries = []
-            for _ in values:
-                if _.strip().lower() != "":
-                    entries.append(_.strip().lower())
-            entry = "+++".join(entries)
-            card[field] = entry
-
-        if retry == True:
-            print("Let's try that again....\n")
-            continue
+        card = create_card(fields)
 
         # Check with user that all entered data is valid
         print("Would you like to submit the following flashcard?\n")
@@ -296,7 +271,7 @@ def the(card):
     fields = gather_fields(card)
     printable = list(f"-------- ----- --- -- - -\n-- - {string.capwords(card['card_title'])} - --\n")
     for field in fields:
-        printable.append(f"- {string.capwords(field)}: {string.capwords(card[field].replace('+++', ', '))}\n")
+        printable.append(f"- {string.capwords(field)}: {string.capwords(card[field].replace('@@@', ', '))}\n")
     printable.append("-------- ----- --- -- - -\n")
     full_card = "".join(printable)
     return full_card
@@ -313,8 +288,8 @@ def gather_fields(card):
 
 
 def gather_entries(card, field):
-    # This function handles the retrieval and unpacking of any number of +++ separated entries in a column
-    var = card[field].split("+++")
+    # This function handles the retrieval and unpacking of any number of @@@ separated entries in a column
+    var = card[field].split("@@@")
     try:
         list_var = list(var)
     except:
@@ -322,8 +297,84 @@ def gather_entries(card, field):
     return list_var
 
 
+def create_card(fields):
+    while True:
+        card = {}
+        card["card_title"] = input("Card Title: ").strip().lower()
+        retry = False
+        for field in fields:
+            value = input(f"{string.capwords(field)}: ")
+            # ERROR CHECKING FOR INPUT
+            if "@" in value:
+                print("Please don't include '@' character in your entry, it jams me up good")
+                retry = True
+                break
+            elif value == "":
+                print("Please don't leave any selection blank, input 'none' instead")
+                retry = True
+                break
+
+            # Handle multi-value entries by storing them all in a single string separated by a "@@@"
+            # NOTE I want to make this it's own function to use in create_subjects as well
+            entry = convert_split(value)
+            card[field] = entry
+
+        if retry == True:
+            print("Let's try that again....\n")
+            continue
+        return card
 
 
+def convert_split(value):
+    values = list(value.split(","))
+    entries = []
+    for _ in values:
+        if _.strip().lower() != "":
+            entries.append(_.strip().lower())
+    entry = "@@@".join(entries)
+    return entry
+
+
+def create_subject():
+    # This function will act similarly to the add card but will write a whole new csv to the subjects folder.
+    #TODO ERROR CHECK AND TEST, THEN ADD MORE DESCRIPTIONS 
+    print("INSERT FUNCTION DESCRIPTION HERE")#TODO
+    while True:
+        subject = input("\nFirst, enter the name of the new subject you wish to add\nSubject: ")
+        fields = input("\nNext, input the names of each field you wish the subject to contain in a single list separated by commas (Ex. color, shape, size)\nFields: ").split(",")
+        #NOTE unsure about the folowing syntax
+        for field in fields:
+            field = field.strip()
+        card = create_card(fields)
+
+         # Check with user that all entered data is valid
+        print("Would you like to initiate your new subject using the following flashcard?\n")
+        print(f"- -- {string.capwords(subject)} -- -\n")
+        print(the(card))
+        while True:
+            okay = input("Create Subject? (Y/N): ").strip()
+
+            # Allow user to submit, retry, or exit after reviewing data
+            if okay == "Y":
+                fields.append("card_title")
+                with open(f"subjects/{subject.replace(' ', '_').lower()}.csv", 'w') as csv_file:
+                    writer = csv.DictWriter(csv_file, fieldnames=fields)
+                    writer.writeheader()
+                    writer.writerow(card)
+                return
+            elif okay == "N":
+                try_again = input("Submit 'AGAIN' to try again or 'RETURN' to go back to the top menu: ")
+                if try_again == "AGAIN":
+                    break
+                elif try_again == "RETURN":
+                    return
+                else:
+                    print("Invalid input. Let's try that one again, shall we?\n")
+                    continue
+            else:
+                print("Invalid input. C'mon now it's just one letter, you can do it!\n")
+                continue
+        continue
 
 
 
