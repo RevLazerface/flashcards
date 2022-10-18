@@ -1,6 +1,8 @@
 import string
 import random
 
+#TODO ADD FUNCTION DESCRIPTION COMMENTS, CHECK GIVEN INSTRUCTIONS ARE THOROUGH, ADD ERROR CHECKING
+
 def convert_split(value):
     values = list(value.split(","))
     entries = []
