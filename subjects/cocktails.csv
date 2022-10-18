@@ -1,7 +1,7 @@
 card_title,liquor,ingredient,glass,garnish
-margarita,tequila,triple-sec+++lime juice,margarita,lime
-mojito,white rum,lime juice+++simple+++club+++mint,collins,lime
+margarita,tequila,triple-sec@@@lime juice,margarita,lime
+mojito,white rum,lime juice@@@simple@@@club@@@mint,collins,lime
 manhattan,bourbon,sweet vermouth,martini,cherry
-martini,gin+++vodka,dry vermouth+++olive brine,martini,olive
-old fashioned,bourbon+++rye whiskey,sugar cube+++water+++angostura bitters,rocks,orange peel
-moscow mule,vodka,ginger beer+++lime juice,collins,lime
+martini,gin@@@vodka,dry vermouth@@@olive brine,martini,olive
+old fashioned,bourbon@@@rye whiskey,sugar cube@@@water@@@angostura bitters,rocks,orange peel
+moscow mule,vodka,ginger beer@@@lime juice,collins,lime
