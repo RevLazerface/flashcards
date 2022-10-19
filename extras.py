@@ -18,32 +18,6 @@ def convert_split(value):
     entry = "@@@".join(entries)
     return entry
 
-def create_card(fields):
-    while True:
-        card = {}
-        card["card_title"] = input("Card Title: ").strip().lower()
-        retry = False
-        for field in fields:
-            value = input(f"{string.capwords(field)}: ")
-            # ERROR CHECKING FOR INPUT
-            if "@" in value:
-                print("Please don't include '@' character in your entry, it jams me up good")
-                retry = True
-                break
-            elif value == "":
-                print("Please don't leave any selection blank, input 'none' instead")
-                retry = True
-                break
-
-            # Handle multi-value entries by storing them all in a single string separated by a "@@@"
-            # NOTE I want to make this it's own function to use in create_subjects as well
-            entry = convert_split(value)
-            card[field] = entry
-
-        if retry == True:
-            print("Let's try that again....\n")
-            continue
-        return card
 
 def gather_entries(card, field):
     # This function handles the retrieval and unpacking of any number of @@@ separated entries in a column
@@ -91,51 +65,6 @@ def get_list(card, card_list, field):
     return options, correct
 
     # TODO Error checking
-def random_q(card, card_list):
-    # Set the title and fields as variables
-    title = card["card_title"]
-    fields = gather_fields(card)
-
-    # Pick a random field to generate a question from
-    q = random.randint(0, len(fields)-1)
-    field = fields[q]
-
-    # Obtain the multiple choice options and generate the question, adjusting for single or multiple correct options
-    options, correct = get_list(card, card_list, field)
-    print(f"- -- Card: {string.capwords(title)} -- -")
-    if len(correct) == 1:
-        print(f"Which of these {field} options is correct?")
-    elif len(correct) > 1:
-        print(f"Which {len(correct)} of these {field} options are correct?")
-    for i in range(len(options)):
-        print(f"{i+1}. {string.capwords(options[i])}")
-    
-    # Ask for input once for each correct answer by removing correct answers from the list of correct answers until none remain
-    while correct != []:
-        answer = val_num_input("Answer: ", options)
-        if options[answer-1] in correct:
-            correct.remove(options[answer-1])
-            if len(correct) > 0:
-                print(f"\nCorrect! {len(correct)} more to go....")
-            else:
-                print("\nCorrect! Here's the full card:")
-                print(the(card))
-        else:
-            print("\nIncorrect! Here's the real info:")
-            print(the(card))
-            return False
-    return True
-
-
-def the(card):
-# Take the dict and print it out with nicer formatting
-    fields = gather_fields(card)
-    printable = list(f"-------- ----- --- -- - -\n-- - {string.capwords(card['card_title'])} - --\n")
-    for field in fields:
-        printable.append(f"- {string.capwords(field)}: {string.capwords(card[field].replace('@@@', ', '))}\n")
-    printable.append("-------- ----- --- -- - -\n")
-    full_card = "".join(printable)
-    return full_card
 
 
 def val_num_input(string, list):
