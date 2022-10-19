@@ -5,7 +5,17 @@ import random
 import csv
 import string
 
-#TODO CHECK GIVEN INSTRUCTIONS ARE THOROUGH, ADD ERROR CHECKING, FIGURE OUT HOW TO IMPLEMENT TEST_PROJECT.PY(FIGURE OUT EXACTLY HOW TO ASK FOR ADVICE ON THIS FROM R/CS50)
+# !*TODO*! RESTRUCTURE: In order to implement pytest bs, my main functions need to return values. As much as I love 
+# it's simplicity, more stuff needs to be happening in main. First example is that run_test can return the correct 
+# answer and question number variables I use to print the results at the end. Still to alter:
+# review_cards
+# add_card - can return the card dict and do the writing in main
+# choose_subject
+# create_subject
+
+
+
+
 # TODO(EXPAND BELOW PROGRAM DESCRIPTION)
 #  This program requires the relevant .csv files to be stored in a folder within the main directory entitled "subjects"
     

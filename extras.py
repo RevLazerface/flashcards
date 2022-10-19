@@ -4,11 +4,17 @@ import random
 #TODO ADD FUNCTION DESCRIPTION COMMENTS, CHECK GIVEN INSTRUCTIONS ARE THOROUGH, ADD ERROR CHECKING
 
 def convert_split(value):
+    # Convert_split() takes the user's input and for multi-entry inputs, reformats the string to my specifications
+
+    # Split multi-entry inputs, remove whitespace and set to lowercase
     values = list(value.split(","))
     entries = []
     for _ in values:
+        #Check for empty spaces betwen extraneous commas
         if _.strip().lower() != "":
             entries.append(_.strip().lower())
+   
+    # Single entry inputs will be returned as is, multi-entry inputs will be reformatted with @@@ separators
     entry = "@@@".join(entries)
     return entry
 
