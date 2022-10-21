@@ -33,7 +33,7 @@ def gather_fields(card):
     try:
         fields = list(card.keys())
     except:
-        raise ValueError("card.keys() couldn't be listified! Where did I leave those darn things?!")
+        raise ValueError(f"{card} couldn't be listified! Where did I leave those darn things?!")
     fields.remove("card_title")
     return fields
 
