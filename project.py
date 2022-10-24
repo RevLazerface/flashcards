@@ -6,7 +6,9 @@ import random
 import csv
 import string
 
-# !*TODO*! Error checking! On the list: Making sure that users can't input invalid file names
+# !*TODO*! Error checking! On the list: 
+# - Make sure invalid input messages are helpful and instructions are clear
+# - Check that EVERY INPUT is properly safeguarded
 
 # TODO(EXPAND BELOW PROGRAM DESCRIPTION)
 #  This program requires the relevant .csv files to be stored in a folder within the main directory entitled "subjects"
@@ -17,14 +19,13 @@ def main():
     # of the program's functions they want to undertake. All of the functions return the user to this main 
     # menu once completed so that the user can take perform another function or exit.
 
-    # Begin by initiating the desired subject and saving relevant variables to be used by main functions
+    # Initiate the desired subject and save relevant variables to be used by main functions
     print("\nWelcome to flashcards.py! Before we begin, please pick a subject from the list:\n")
     subject, card_list, keys = choose_subject()
     print("\nWhat a delightful choice! What would you like to do now?")
     continued = 0
     while True:
-
-        # Only includes this prompt if any task has already been completed
+        # Only include this prompt if any task has already been completed
         if continued == 1:
             print("\nTask completed exquisitely! Do you wish to perform another task, or exit the program?")
 
@@ -33,10 +34,10 @@ def main():
         task = input("\nSubmit: ").strip()
         if task == 'REVIEW':
             while True:
-                # 
+                # Select card(s) to review and print, then choose to continue or return to menu
                 review = review_cards(card_list)
                 for i in range(len(review)):
-                    print(the(review[i]))
+                    print(the(review[i]))    
                 print("What would you like to do next?")
                 next = choose("Submit 'AGAIN' to try again or 'RETURN' to go back to the top menu: ", 'AGAIN', 'RETURN')
                 if next == 'AGAIN':
@@ -60,16 +61,19 @@ def main():
                 if random_q(card, card_list):
                     correct += 1
 
-            # Print results and exit function, no output necessary
+            # Print results and return to menu
             print(f"Results: {correct}/{q_num} correct answers\n")  
             continued = 1
             continue
 
         elif task == 'ADD':
             while True:
+                # Generate input prompts based on the current subject for the user to write a new card
                 fields = gather_fields(card_list[0])
                 print("\nComplete the prompts to add your new flashcard!\nFor fields with multiple values, input all values at once in a list separated by commas (Example: blue, green, red, etc...)\n(WARNING: Any input separated by commas will count each side of the comma as separate entries, use commas with caution!)")
                 card = create_card(fields)
+
+                # Allow user to review card before submitting
                 print("Would you like to submit the following flashcard?\n")
                 print(the(card))
                 add = choose("Sumbit? (Y/N): ", 'Y', 'N')
@@ -83,6 +87,7 @@ def main():
                     print("\nCard officially laminated and added to the folder. What would you like to do now?")
                 elif add == "N":
                     print("\nCard officially crumpled up and thrown in the bin. What would you like to do now?")
+                
                 # Prompt the user to make another card or return to the main menu
                 what_now = choose("Submit 'AGAIN' to try again or 'RETURN' to go back to the top menu: ", 'AGAIN', 'RETURN')
                 if what_now == 'AGAIN':
@@ -93,6 +98,7 @@ def main():
             continue
 
         elif task == 'CHANGE':
+            # Choose new subject and redeclare all relevant variables
             subject, card_list, keys = choose_subject()
             continued = 1
             continue
@@ -100,6 +106,7 @@ def main():
         elif task == 'CREATE':
             print("\nIn order to create a subject, you'll need a subject name, the information fields you want to be tested on, and one full flashcard to start it off. Follow these step by step instructions, and don't worry, you'll get a chance to review everything at the end!")
             while True:
+                # Prompt user for subject name, since it will be used as a file name it is first cleaned and validated
                 new_subject = input("\nFirst, enter the name of the new subject you wish to add\nSubject: ")
                 sani_subject = sanitize_filename(new_subject)
                 if new_subject != sani_subject:
@@ -115,40 +122,31 @@ def main():
                         elif retry == 'RETURN':
                             break
 
-
+                # Prompt user for the new subject's fields and clean them
                 new_fields = input("\nNext, input the names of each field you wish the subject to contain in a single list separated by commas (Ex. color, shape, size)\nFields: ").split(",")
-
-                # Clean data and create new flashcard
                 for _ in range(len(new_fields)):
                     if new_fields[_] == "":
                         new_fields.remove(new_fields[_])
                     else:
                         new_fields[_] = new_fields[_].strip()
+
+                # Prompt user to generate a card with the new fields then check with user that all entered data is valid
                 print("\nFinally, fill out your new subject's first flashcard")
                 card = create_card(new_fields)
-
-                # Check with user that all entered data is valid
                 print("Would you like to initiate your new subject using the following flashcard? Once you have it will be availble to select from the list of subjects by typing 'CHANGE' into the main menu.\n")
                 print(f"- -- {string.capwords(new_subject)} -- -\n")
                 print(the(card))
-                while True:
-                    okay = input("Create Subject? (Y/N): ").strip()
-                    if okay not in ['Y', 'N']:
-                        print("Invalid input. C'mon now it's just one letter, you can do it!\n")
-                        continue
-                    else: 
-                        break
+                okay = choose("Create Subject? (Y/N): ", 'Y', 'N').strip()
+
                 # After reviewing data, allow user to submit the new subject, retry, or exit
                 if okay == "Y":
                     fieldnames = ["card_title"]
                     fieldnames.extend(new_fields)
-# NOTE ERROR CHECKING: LOOK UP RULES FOR FILE NAMES AND ENSURE ADHERENCE
                     with open(f"subjects/{new_subject.replace(' ', '_').lower()}.csv", 'w') as csv_file:
                         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
                         writer.writeheader()
                         writer.writerow(card)
                     break
-# NOTE MARK 4
                 elif okay == "N":
                     try_again = choose("Submit 'AGAIN' to try again or 'RETURN' to go back to the top menu: ", 'AGAIN', 'RETURN')
                     if try_again == "AGAIN":
@@ -172,30 +170,30 @@ def review_cards(card_list):
     # to the main menu.
     
     # Prompt user to review either an individual card or all cards simultaneously
-    while True:
-        print("\nWould you like to review cards individually, or print them all at once?\n- Submit 'ONE' to view individual cards\n- Submit 'ALL' to view all cards at once")
-        view = input("Submit: ")
+    print("\nWould you like to review cards individually, or print them all at once?\n- Submit 'ONE' to view individual cards\n- Submit 'ALL' to view all cards at once")
+    view = choose("Submit: ", 'ONE', 'ALL')
 
-        # List the card titles with index numbers
-        if view == "ONE":    
-            print("\nPlease submit the index number for the desired card from the following list:")
-            counter = 1
-            for card in card_list:
-                print(f"- {counter} - {string.capwords(card['card_title'])}")
-                counter += 1
-            # Take numeric imput and adjust it to index the list, then print the card
-            pick = val_num_input("Card Number: ", card_list) - 1
-            review = []
-            review.append(card_list[pick])
-            return review
-        elif view == "ALL":
-            return card_list
-        else:
-            print("Invalid input, let's try that again shall we?")
-            continue
+    # List the card titles with index numbers
+    if view == 'ONE':    
+        print("\nPlease submit the index number for the desired card from the following list:")
+        counter = 1
+        for card in card_list:
+            print(f"- {counter} - {string.capwords(card['card_title'])}")
+            counter += 1
+
+        # Take numeric imput and adjust it to index the list, then print the card
+        pick = val_num_input("Card Number: ", card_list) - 1
+        review = []
+        review.append(card_list[pick])
+        return review
+    elif view == 'ALL':
+        return card_list
 
 
 def random_q(card, card_list):
+    # Random_q creates a randomly generated question for a given card, returning True for a correct answer and False 
+    # for and incorrect answer
+
     # Set the title and fields as variables
     title = card["card_title"]
     fields = gather_fields(card)
@@ -233,9 +231,10 @@ def random_q(card, card_list):
 
 def choose_subject():
     # Choose_subject() presents a list of all .csv files located in the subjects folder and allows the user to 
-    # select one, returning the path to said file which is then fed into main's other functions. 
+    # select one, returning the path to said file as well as the list of dictionaries and the column names which 
+    # are then fed into main's other functions 
     
-     # Retrieve path to the folder by adding the folder name to the main directory path
+    # Retrieve path to the folder by adding the folder name to the main directory path
     script_dir = os.path.dirname(__file__)
     s = "subjects"
     path = os.path.join(script_dir, s)
@@ -249,7 +248,8 @@ def choose_subject():
             print(f"- {counter} - {string.capwords(file.removesuffix('.csv').replace('_', ' '))}")
             counter += 1
 
-    # Take the numeric input to index the list and generate the file path as a string, then return that string
+    # Take the numeric input to index the list and generate the file path as a string, then return that string, the 
+    # list of cards, and the keys
     choice = val_num_input("\nEnter the corresponding number for your desired subject: ", file_names) - 1
     subject = "/".join([s, file_names[choice]])
     try:
@@ -259,12 +259,13 @@ def choose_subject():
             keys = csv_reader.fieldnames
     except FileNotFoundError:
         raise FileNotFoundError("Somehow you selected a file that doesn't exist. That shouldn't be possible but you did it. Impressive!")
+# NOTE CHECK THAT CSV HAS COLUMN TITLED 'card_title'
 
     return subject, card_list, keys
 
 
 def the(card):
-# Take the dict and print it out with ASCII formatting
+# Take the dict and print it out with my own personal ASCII formatting
     fields = gather_fields(card)
     printable = list(f"-------- ----- --- -- - -\n-- - {string.capwords(card['card_title'])} - --\n")
     for field in fields:
@@ -275,14 +276,19 @@ def the(card):
 
 
 def create_card(fields):
+    # Create_card takes a subject's fields and generated an input prompt for each one, checking for valid formating 
+    # and returning a properly structured dictionary
+    
+# NOTE include warning about not using the @ symbol, maybe pick a better symbol?
     while True:
+        # Create and empty dict and begin setting variables
         card = {}
         card["card_title"] = input("Card Title: ").strip().lower()
         retry = False
         for field in fields:
+            # Fields are invalid if the are empty or contain an @ symbol
             if field != "":
                 value = input(f"{string.capwords(field)}: ")
-            # ERROR CHECKING FOR INPUT
             if "@" in value:
                 print("Please don't include '@' character in your entry, it jams me up good")
                 retry = True
@@ -292,11 +298,11 @@ def create_card(fields):
                 retry = True
                 break
 
-            # Handle multi-value entries by storing them all in a single string separated by a "@@@"
-            # NOTE I want to make this it's own function to use in create_subjects as well
+            # Handle multiple values by converting to my formatting
             entry = convert_split(value)
             card[field] = entry
-
+        
+        # If field input is invalid, automatically reprompts
         if retry == True:
             print("Let's try that again....\n")
             continue
@@ -304,10 +310,11 @@ def create_card(fields):
 
 
 def choose(prompt, arg1, arg2):
+    # Choose automates asking a prompt in a while loop to allow reprompting, returning only one of the correct options
     while True:
         choice = input(prompt).strip()
         if choice not in [arg1, arg2]:
-            print("Invalid input. Let's try that one again, shall we?\n")
+            print("Invalid input. Please only input one of the stated options\n")
             continue
         else:
             break
