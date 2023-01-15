@@ -1,15 +1,6 @@
-from project import review_cards, random_q, choose_subject, the, create_card, choose
+from project import choose_subject, the, create_card, choose
 import pytest
 
-def test_review_cards():
-    #TODO
-    return
-
-
-def test_random_q():
-    #TODO takes a card dict and a list of cards, uses val_num_input() to get numeric input, returns True or False for correct or incorrect answers
-    return
-    
 
 def test_choose_subject():
     #TODO takes no args, uses val_num_input() to get numeric input, returns file path as string
@@ -22,7 +13,7 @@ def test_the():
     
 
 def test_create_card():
-    #TODO
+    #TODO takes a list of field names and returns a filled out
     return
 
 

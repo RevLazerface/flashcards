@@ -34,10 +34,27 @@ def main():
         task = input("\nSubmit: ").strip()
         if task == 'REVIEW':
             while True:
-                # Select card(s) to review and print, then choose to continue or return to menu
-                review = review_cards(card_list)
-                for i in range(len(review)):
-                    print(the(review[i]))    
+                # Select whether to review one or all cards
+                print("\nWould you like to review cards individually, or print them all at once?\n- Submit 'ONE' to view individual cards\n- Submit 'ALL' to view all cards at once")
+                view = choose("Submit: ", 'ONE', 'ALL')
+                if view == 'ONE':  
+                    # List the card titles with index numbers
+                    print("\nPlease submit the index number for the desired card from the following list:")
+                    counter = 1
+                    for card in card_list:
+                        print(f"- {counter} - {string.capwords(card['card_title'])}")
+                        counter += 1
+
+                    # Take numeric imput and adjust it to index the list, then print the card
+                    pick = val_num_input("Card Number: ", card_list) - 1  
+                    print(the(card_list[pick]))
+                
+                elif view == 'ALL':
+                    # Print every card in the list
+                    for review in card_list:
+                        print(the(review))   
+
+                # Prompt the user to review another card or return to the main menu
                 print("What would you like to do next?")
                 next = choose("Submit 'AGAIN' to try again or 'RETURN' to go back to the top menu: ", 'AGAIN', 'RETURN')
                 if next == 'AGAIN':
@@ -49,7 +66,7 @@ def main():
 
         elif task == 'TEST':
             # Give detailed instructions on how to answer, including multiple correct answers
-            print("\nEach multiple choice question will be randomly generated from one of the fields on each card. Simple input the numeral of the correct answer. For questions with multiple correct answers, input each correct answer one at a time.\n")
+            print("\n- -- Test Instructions -- -\nEach multiple choice question will be randomly generated from one of the fields on each card. Simple input the numeral of the correct answer. For questions with multiple correct answers, input each correct answer one at a time.\n")
             
             # Generate a random question for each card in a random order, tracking correct answers
             random.shuffle(card_list)
@@ -162,43 +179,15 @@ def main():
             print("Invalid input, let's try that again shall we?")
             continued = 0
             continue
-
-
-def review_cards(card_list):
-    # Review_cards() allows users to view the cards for the selected subject directly, either one at a time or 
-    # all at once. After viewing the selection the user is prompted to either review another selection or return 
-    # to the main menu.
-    
-    # Prompt user to review either an individual card or all cards simultaneously
-    print("\nWould you like to review cards individually, or print them all at once?\n- Submit 'ONE' to view individual cards\n- Submit 'ALL' to view all cards at once")
-    view = choose("Submit: ", 'ONE', 'ALL')
-
-    # List the card titles with index numbers
-    if view == 'ONE':    
-        print("\nPlease submit the index number for the desired card from the following list:")
-        counter = 1
-        for card in card_list:
-            print(f"- {counter} - {string.capwords(card['card_title'])}")
-            counter += 1
-
-        # Take numeric imput and adjust it to index the list, then print the card
-        pick = val_num_input("Card Number: ", card_list) - 1
-        review = []
-        review.append(card_list[pick])
-        return review
-    elif view == 'ALL':
-        return card_list
-
+        
 
 def random_q(card, card_list):
     # Random_q creates a randomly generated question for a given card, returning True for a correct answer and False 
     # for and incorrect answer
 
-    # Set the title and fields as variables
+    # Set the title and fields as variables and pick a random field to generate a question from
     title = card["card_title"]
     fields = gather_fields(card)
-
-    # Pick a random field to generate a question from
     q = random.randint(0, len(fields)-1)
     field = fields[q]
 
@@ -230,7 +219,7 @@ def random_q(card, card_list):
 
 
 def choose_subject():
-    # Choose_subject() presents a list of all .csv files located in the subjects folder and allows the user to 
+    # Choose_subject presents a list of all .csv files located in the subjects folder and allows the user to 
     # select one, returning the path to said file as well as the list of dictionaries and the column names which 
     # are then fed into main's other functions 
     
