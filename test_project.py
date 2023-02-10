@@ -1,4 +1,4 @@
-from project import choose_subject, the, create_card, choose
+from project import choose_subject, create_card, choose
 import pytest
 
 

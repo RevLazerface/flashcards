@@ -22,7 +22,6 @@ def convert_split(value):
 def get_list(card, subject, field):
     # Set an empty list to store all existing values for the relevant key
     full_list = []
-#NOTE TURN THIS INTO SUBJECT CLASS METHOD
     for row in subject.card_list:
         c = Card(row)
         entries = c.gather(field)
@@ -51,6 +50,8 @@ def get_list(card, subject, field):
 
 def val_num_input(string, list):
     while True:
+        if list == []:
+            raise Exception("Ok seriously stop goofing around in my program. We both know it shouldn't be possible for this list to be empty. Do better.")
         try:
             answer = float(input(string).strip())
         except ValueError:
@@ -79,7 +80,7 @@ class Subject:
 
 class Card:
     def __init__(self, card):
-        self.card = card
+        self.dict = card
         self.title = card['card_title']
         fields = []
         for key in list(card.keys()):
@@ -88,7 +89,7 @@ class Card:
         self.fields = fields
 
     def gather(self, field):
-        var = self.card[field].split("@@@")
+        var = self.dict[field].split("@@@")
         try:
             list_var = list(var)
         except:
