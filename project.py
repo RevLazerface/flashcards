@@ -1,4 +1,4 @@
-from extras import convert_split, gather_fields, get_list, val_num_input
+from extras import convert_split, gather_fields, get_list, val_num_input, Subject
 from pathvalidate import sanitize_filename
 import os
 import sys
@@ -21,6 +21,7 @@ def main():
 
     # Initiate the desired subject and save relevant variables to be used by main functions
     print("\nWelcome to flashcards.py! Before we begin, please pick a subject from the list:\n")
+    #subject = choose_subject()
     subject, card_list, keys = choose_subject()
     print("\nWhat a delightful choice! What would you like to do now?")
     continued = 0
@@ -41,17 +42,25 @@ def main():
                     # List the card titles with index numbers
                     print("\nPlease submit the index number for the desired card from the following list:")
                     counter = 1
+#NOTE CARDLIST
                     for card in card_list:
                         print(f"- {counter} - {string.capwords(card['card_title'])}")
                         counter += 1
 
                     # Take numeric imput and adjust it to index the list, then print the card
+#NOTE CARDLIST
                     pick = val_num_input("Card Number: ", card_list) - 1  
+#NOTE CARDLIST
+#NOTE PRINT THE
+# TODO Will have to initiate the selected card as a Card object first
                     print(the(card_list[pick]))
                 
                 elif view == 'ALL':
                     # Print every card in the list
+#NOTE CARDLIST
                     for review in card_list:
+#NOTE PRINT THE
+# TODO Will have to initiate the selected card as a Card object first
                         print(the(review))   
 
                 # Prompt the user to review another card or return to the main menu
@@ -69,12 +78,19 @@ def main():
             print("\n- -- Test Instructions -- -\nEach multiple choice question will be randomly generated from one of the fields on each card. Simple input the numeral of the correct answer. For questions with multiple correct answers, input each correct answer one at a time.\n")
             
             # Generate a random question for each card in a random order, tracking correct answers
+#NOTE CARDLIST
+# TODO Because it's being shuffled, we will create a test_list variable to store the card_list
+# I don't know if shuffling the list directly from the subject class would permanently shuffle it, 
+# but I don't want to take that chance.
+#NOTE CARDLIST TO TEST_LIST
             random.shuffle(card_list)
             correct = 0
             q_num = 0
+#NOTE CARDLIST TO TEST_LIST
             for card in card_list:
                 q_num += 1
                 print(f"Question {q_num}\n")
+#NOTE CARDLIST TO TEST_LIST
                 if random_q(card, card_list):
                     correct += 1
 
@@ -86,17 +102,23 @@ def main():
         elif task == 'ADD':
             while True:
                 # Generate input prompts based on the current subject for the user to write a new card
+#NOTE CARDLIST
+#NOTE FIELDS
                 fields = gather_fields(card_list[0])
                 print("\nComplete the prompts to add your new flashcard!\nFor fields with multiple values, input all values at once in a list separated by commas (Example: blue, green, red, etc...)\n(WARNING: Any input separated by commas will count each side of the comma as separate entries, use commas with caution!)")
+#NOTE CARD
+# TODO RENAME NEW_CARD
                 card = create_card(fields)
 
                 # Allow user to review card before submitting
                 print("Would you like to submit the following flashcard?\n")
+#NOTE PRINT THE
                 print(the(card))
                 add = choose("Sumbit? (Y/N): ", 'Y', 'N')
                 if add == "Y":
                     try:
                         with open(subject, 'a') as csv_file:
+#NOTE KEYS
                             writer = csv.DictWriter(csv_file, fieldnames=keys)
                             writer.writerow(card)
                     except FileNotFoundError:
@@ -116,6 +138,7 @@ def main():
 
         elif task == 'CHANGE':
             # Choose new subject and redeclare all relevant variables
+            #subject = choose_subject()
             subject, card_list, keys = choose_subject()
             continued = 1
             continue
@@ -149,9 +172,11 @@ def main():
 
                 # Prompt user to generate a card with the new fields then check with user that all entered data is valid
                 print("\nFinally, fill out your new subject's first flashcard")
+#NOTE CARD
                 card = create_card(new_fields)
                 print("Would you like to initiate your new subject using the following flashcard? Once you have it will be availble to select from the list of subjects by typing 'CHANGE' into the main menu.\n")
                 print(f"- -- {string.capwords(new_subject)} -- -\n")
+#NOTE PRINT THE
                 print(the(card))
                 okay = choose("Create Subject? (Y/N): ", 'Y', 'N').strip()
 
@@ -179,19 +204,23 @@ def main():
             print("Invalid input, let's try that again shall we?")
             continued = 0
             continue
-        
 
+#NOTE This cardlist is NOT THE TEST CARDLIST, so this should be changed to take the Subject object as an argument
+#def random_q(card, subject):
 def random_q(card, card_list):
     # Random_q creates a randomly generated question for a given card, returning True for a correct answer and False 
     # for and incorrect answer
 
     # Set the title and fields as variables and pick a random field to generate a question from
-    title = card["card_title"]
+    title = card['card_title']
+#NOTE GATHER_FIELDS
+# TODO Gather_fields is now built into the Subject class, so this needs a workaround
     fields = gather_fields(card)
     q = random.randint(0, len(fields)-1)
     field = fields[q]
 
     # Obtain the multiple choice options and generate the question, adjusting for single or multiple correct options
+#NOTE GET_LIST IS something I can put in the Subject class
     options, correct = get_list(card, card_list, field)
     print(f"- -- Card: {string.capwords(title)} -- -")
     if len(correct) == 1:
@@ -210,9 +239,11 @@ def random_q(card, card_list):
                 print(f"\nCorrect! {len(correct)} more to go....")
             else:
                 print("\nCorrect! Here's the full card:")
+#NOTE PRINT THE
                 print(the(card))
         else:
             print("\nIncorrect! Here's the real info:")
+#NOTE PRINT THE
             print(the(card))
             return False
     return True
@@ -248,11 +279,14 @@ def choose_subject():
             keys = csv_reader.fieldnames
     except FileNotFoundError:
         raise FileNotFoundError("Somehow you selected a file that doesn't exist. That shouldn't be possible but you did it. Impressive!")
-# NOTE CHECK THAT CSV HAS COLUMN TITLED 'card_title'
-
+    if 'card_title' not in keys:
+        raise Exception("CSV File not properly formatted - Missing 'card_title'")
+#NOTE RETURN SUBJECT CLASS
+    #return Subject(subject, card_list, keys)
     return subject, card_list, keys
 
-
+#NOTE NO LONGER NEEDED
+# TODO Don't delete until CREATE Task is fixed!
 def the(card):
 # Take the dict and print it out with my own personal ASCII formatting
     fields = gather_fields(card)
@@ -295,6 +329,7 @@ def create_card(fields):
         if retry == True:
             print("Let's try that again....\n")
             continue
+#NOTE RETURN CARD OBJECT
         return card
 
 

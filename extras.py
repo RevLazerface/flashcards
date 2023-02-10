@@ -81,3 +81,39 @@ def val_num_input(string, list):
             print("That number wasn't in the range and I think you know it!")
             continue
         return int(answer)
+
+
+# TODO Create the Subject class and Flashcard subclass*** research subclasses
+class Subject:
+    def __init__(self, title, card_list, keys):
+        self.title = title
+        self.card_list = card_list
+        self.keys = keys
+        self.fields = keys.remove('card_title')
+
+    # TODO Methods: print the card
+#NOTE DELETE ONCE Card CLASS IS TESTED
+    #def print_card(self, index):
+    #    printable = list(f"-------- ----- --- -- - -\n-- - {string.capwords(self.card_list[index]['card_title'])} - --\n")
+    #    for field in self.fields:
+    #        printable.append(f"- {string.capwords(field)}: {string.capwords(self.card_list[index][field])}\n")
+    #    printable.append("-------- ----- --- -- - -\n")
+    #    full_card = "".join(printable)
+    #    print(full_card)
+    
+    def __str__(self):
+        return self.title
+
+
+class Card:
+    def __init__(self, card):
+        self.title = card['card_title']
+        self.fields = list(card.keys()).remove('card_title')
+
+    def __str__(self):
+        printable = list(f"-------- ----- --- -- - -\n-- - {string.capwords(self.title)} - --\n")
+        for field in self.fields:
+            printable.append(f"- {string.capwords(field)}: {string.capwords(self[field])}\n")
+        printable.append("-------- ----- --- -- - -\n")
+        full_card = "".join(printable)
+        return full_card
