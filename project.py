@@ -1,4 +1,4 @@
-from extras import convert_split, get_list, val_num_input, Subject, Card
+from extras import Subject, Card
 from pathvalidate import sanitize_filename
 import os
 import sys
@@ -6,11 +6,10 @@ import random
 import csv
 import string
 
-# !*TODO*! Error checking! On the list: 
-# - Make sure invalid input messages are helpful and instructions are clear
-# - Check that EVERY INPUT is properly safeguarded
+# !*TODO*! On the list: 
 # - Set up test_project.py
-# - Check that all comments are up to date
+# - update create_card with regex
+# - update val_num_input to exit after repeated failures
 
 # TODO(EXPAND BELOW PROGRAM DESCRIPTION)
 #  This program requires the relevant .csv files to be stored in a folder within the main directory entitled "subjects"
@@ -70,7 +69,7 @@ def main():
 #NOTE TEST COMMENTED, TEXT CHECKED, ERROR TESTED
         elif task == 'TEST':       
             # Generate a random question for each card in a random order, tracking correct answers
-            print("\n- -- Test Instructions -- -\nWhat a bold selection! In this test you will be presented witha multiple choice question about each card in this subject. Each multiple choice question will be randomly generated from one of the fields on each card. Simply input the numeral of what you believe to be the correct answer. For questions with multiple correct answers, input each correct answer one at a time.\n")
+            print("\n- -- Test Instructions -- -\nWhat a bold selection! In this test you will be presented with a multiple choice question about each card in this subject. Each multiple choice question will be randomly generated from one of the fields on each card. Simply input the numeral of what you believe to be the correct answer. For questions with multiple correct answers, input each correct answer one at a time.\n")
             test_list = s.card_list
             random.shuffle(test_list)
             correct = 0
@@ -197,7 +196,7 @@ def main():
             continued = 0
             continue
 
-
+#NOTE random_q COMMENTED, TEXT CHECKED, ERROR TESTED
 def random_q(card, subject):
     # Random_q creates a randomly generated question for a given card, returning True for a correct answer and False 
     # for and incorrect answer
@@ -207,17 +206,27 @@ def random_q(card, subject):
     q = random.randint(0, len(subject.fields)-1)
     field = subject.fields[q]
 
+    # Using the list of all possible answer and the list of correct answers, generate multiple choice options with at most 3 wrong answers
+    full_list = subject.get_list(field)
+    correct = q_card.gather(field)
+    for item in correct:
+        full_list.remove(item)
+    if len(full_list) < 3:
+        options = random.sample(full_list, k=len(full_list))
+    else:
+        options = random.sample(full_list, k=3)
+    options.extend(correct)
+    random.shuffle(options)
+
     # Obtain the multiple choice options and generate the question, adjusting for single or multiple correct options
-#NOTE GET_LIST IS something I can put in the Subject class
-    options, correct = get_list(q_card, subject, field)
     print(f"- -- Card: {string.capwords(q_card.title)} -- -")
     if len(correct) == 1:
         print(f"Which of these {field} options is correct?")
     elif len(correct) > 1:
-        print(f"Which {len(correct)} of these {field} options are correct?")
+        print(f"Which {len(correct)} of these '{field}' options are correct?")
     for i in range(len(options)):
         print(f"{i+1}. {string.capwords(options[i])}")
-    
+   
     # Ask for input once for each correct answer by removing correct answers from the list of correct answers until none remain
     while correct != []:
         answer = val_num_input("Answer: ", options)
@@ -235,6 +244,7 @@ def random_q(card, subject):
     return True
 
 
+#NOTE choose_subject COMMENTED, TEXT CHECKED, ERROR TESTED
 def choose_subject():
     # Choose_subject presents a list of all .csv files located in the subjects folder and allows the user to 
     # select one, returning the path to said file as well as the list of dictionaries and the column names which 
@@ -254,8 +264,7 @@ def choose_subject():
             print(f"- {counter} - {string.capwords(file.removesuffix('.csv').replace('_', ' '))}")
             counter += 1
 
-    # Take the numeric input to index the list and generate the file path as a string, then return that string, the 
-    # list of cards, and the keys
+    # Read the selected .csv, checking for proper formatting, and use the data to initiate and return a Subject object 
     choice = val_num_input("\nEnter the corresponding number for your desired subject: ", file_names) - 1
     subject = "/".join([subs, file_names[choice]])
     try:
@@ -273,9 +282,11 @@ def choose_subject():
     return Subject(subject, card_list, keys)
 
 
+#TODO regex & text
+#NOTE Regex might simplify a lot of this program, need to rewatch regex lecture
 def create_card(fields):
-    # Create_card takes a subject's fields and generated an input prompt for each one, checking for valid formating 
-    # and returning a properly structured dictionary
+    # Create_card takes a subject's fields and generates an input prompt for each one, checking for valid formating 
+    # and returning a Card object
     
 # NOTE include warning about not using the @ symbol, maybe pick a better symbol?
     while True:
@@ -287,6 +298,7 @@ def create_card(fields):
             # Fields are invalid if the are empty or contain an @ symbol
             if field != "":
                 value = input(f"{string.capwords(field)}: ")
+# NOTE I can definitely use regex to only exclude the exact sequence instead of all @'s
             if "@" in value:
                 print("Please don't include '@' character in your entry, it jams me up good")
                 retry = True
@@ -297,7 +309,14 @@ def create_card(fields):
                 break
 
             # Handle multiple values by converting to my formatting
-            entry = convert_split(value)
+            values = list(value.split(","))
+            entries = []
+            for _ in values:
+                if _.strip().lower() != "":
+                    entries.append(_.strip().lower())
+   
+            # Single entry inputs will be returned as is, multi-entry inputs will be reformatted with @@@ separators
+            entry = "@@@".join(entries)
             card[field] = entry
         
         # If field input is invalid, automatically reprompts
@@ -306,7 +325,30 @@ def create_card(fields):
             continue
         return Card(card)
 
+# TODO make it break out of the program after X incorrect tries
+#NOTE val_num_input COMMENTED, TEXT CHECKED, ERROR TESTED
+def val_num_input(string, options):
+    # val_num_input prompts the user to input the numeric index of a list of options, then validates that the input
+    # is an integer within the range, returning the integer to be used to index the actual list.
 
+    while True:
+        if options == [] or type(options) != list:
+            raise Exception("Well that's just not possible. Either you're screwing around, or I've made a terrible mistake.")
+        try:
+            answer = float(input(string).strip())
+        except ValueError:
+            print("Ok that wasn't even one number, are you really trying?")
+            continue
+        if answer % 1 != 0:
+            print("A fraction? Seriously? Now you're just being silly.")
+            continue
+        if not 1 <= answer <= len(options):
+            print("That number wasn't in the range and I think you know it!")
+            continue
+        return int(answer)
+
+
+#NOTE choose COMMENTED, TEXT CHECKED, ERROR TESTED
 def choose(prompt, arg1, arg2):
     # Choose automates asking a prompt in a while loop to allow reprompting, returning only one of the correct options
     # It can't be broken except by input one of the correct options 

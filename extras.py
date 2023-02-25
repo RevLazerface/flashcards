@@ -1,69 +1,4 @@
 import string
-import random
-
-#TODO ADD FUNCTION DESCRIPTION COMMENTS, CHECK GIVEN INSTRUCTIONS ARE THOROUGH, ADD ERROR CHECKING
-
-def convert_split(value):
-    # Convert_split() takes the user's input and for multi-entry inputs, reformats the string to my specifications
-
-    # Split multi-entry inputs, remove whitespace and set to lowercase
-    values = list(value.split(","))
-    entries = []
-    for _ in values:
-        #Check for empty spaces betwen extraneous commas
-        if _.strip().lower() != "":
-            entries.append(_.strip().lower())
-   
-    # Single entry inputs will be returned as is, multi-entry inputs will be reformatted with @@@ separators
-    entry = "@@@".join(entries)
-    return entry
-
-
-def get_list(card, subject, field):
-    # Set an empty list to store all existing values for the relevant key
-    full_list = []
-    for row in subject.card_list:
-        c = Card(row)
-        entries = c.gather(field)
-        full_list.extend(entries)
-
-    # Remove non-unique values from list with set, then turn back to a list because random was weird about set for some reason
-    full_list = set(full_list)
-    full_list = list(full_list)
-
-    # Gather correct ansnwers and remove them from the list
-    correct = card.gather(field)
-    for item in correct:
-        full_list.remove(item)
-
-    # Make a new list of at most 3 randomly selected incorrect entries
-    if len(full_list) < 3:
-        options = random.sample(full_list, k=len(full_list))
-    else:
-        options = random.sample(full_list, k=3)
-    options.extend(correct)
-    random.shuffle(options)
-    return options, correct
-
-    # TODO Error checking
-
-
-def val_num_input(string, list):
-    while True:
-        if list == []:
-            raise Exception("Ok seriously stop goofing around in my program. We both know it shouldn't be possible for this list to be empty. Do better.")
-        try:
-            answer = float(input(string).strip())
-        except ValueError:
-            print("Ok that wasn't even one number, are you really trying?")
-            continue
-        if answer % 1 != 0:
-            print("A fraction? Seriously? Now you're just being silly.")
-            continue
-        if not 1 <= answer <= len(list):
-            print("That number wasn't in the range and I think you know it!")
-            continue
-        return int(answer)
 
 
 class Subject:
@@ -76,8 +11,18 @@ class Subject:
             if key != 'card_title':
                 fields.append(key)
         self.fields = fields
+    
+    def get_list(self, field):
+        # Set an empty list to store all existing values for the relevant key, using set() to remove duplicates
+        full_list = []
+        for row in self.card_list:
+            c = Card(row)
+            entries = c.gather(field)
+            full_list.extend(entries)
+        full_list = set(full_list)
+        return list(full_list)
 
-
+#TODO Prevent anything but a properly formatted dict to be used to initiate a Card within the class itself
 class Card:
     def __init__(self, card):
         self.dict = card
@@ -93,7 +38,7 @@ class Card:
         try:
             list_var = list(var)
         except:
-            raise ValueError("list_var couldn't be listified! I'm mystified!")
+            raise ValueError("var couldn't be listified! I'm mystified!")
         return list_var
 
     def __str__(self):
