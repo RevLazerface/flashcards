@@ -1,18 +1,19 @@
 from extras import Subject, Card
 from pathvalidate import sanitize_filename
-import os
-import sys
-import random
-import csv
-import string
+import os, sys, random, csv, string, re
 
 # !*TODO*! On the list: 
 # - Set up test_project.py
-# - update create_card with regex
-# - update val_num_input to exit after repeated failures
+# - Wishlist: card editing, card removal
 
-# TODO(EXPAND BELOW PROGRAM DESCRIPTION)
-#  This program requires the relevant .csv files to be stored in a folder within the main directory entitled "subjects"
+
+# This program is a terminal based flashcard studying program that allows users review cards, test themselves on the 
+# card's contents, add new cards, and change or even create entirely new subjects. They can review one card at a time 
+# or all cards simultaneously, and the test randomly generates multiple choice questions, once for a randomly selected
+# field on each card. The program requires the relevant .csv files to be stored in a folder within the main directory
+# entitled "subjects" and each .csv must have one column titled "card_title". The text-based user interface is fairly 
+# simplistic and rigid, with the user required to input commands exactly as instructed. The cards and subject, however,
+# are left to the user to input as they see fit with few limitations.
     
    
 def main():
@@ -49,17 +50,18 @@ def main():
                         counter += 1
                     pick = val_num_input("Card Number: ", s.card_list) - 1  
                     rev_card = Card(s.card_list[pick])
-                    print(rev_card)
+                    print(f"\n{rev_card}")
                 
                 elif view == 'ALL':
                     # Print every card in the list
+                    print("")
                     for card in s.card_list:
                         rev_card = Card(card)
                         print(rev_card)   
 
                 # Prompt the user to review another card or return to the main menu
                 print("What would you like to do next?")
-                next = choose("Submit 'AGAIN' to try again or 'RETURN' to go back to the top menu: ", 'AGAIN', 'RETURN')
+                next = choose("Submit 'AGAIN' to review again or 'RETURN' to go back to the top menu: ", 'AGAIN', 'RETURN')
                 if next == 'AGAIN':
                     continue
                 elif next == 'RETURN':
@@ -87,9 +89,11 @@ def main():
         elif task == 'ADD':
             while True:
                 # Allow user to generate a new card based on the current subject and review the card before submitting
-                print("\nWhat an inspired pick! Complete the prompts to add your new flashcard!\nFor fields with multiple values, input all values at once in a list separated by commas (Example: blue, green, red, etc...)\n(WARNING: Any input separated by commas will count each side of the comma as separate entries, use commas with caution!)")
+                print("\nWhat an inspired pick! Complete the prompts to add your new flashcard. For fields with multiple values, input all values at once in a list separated by commas (Example: blue, green, red, etc...)\n\n!! WARNING: Any input separated by commas will count each side of the comma as separate entries, use commas with caution !! Also, please avoid using the '~' symbol, especially at the beginning or end of your entry.\n")
                 add_card = create_card(s.fields)
-                print("Would you like to submit the following flashcard?\n")
+                if not add_card:
+                    break
+                print("\nWould you like to submit the following flashcard?\n")
                 print(add_card)
                 add = choose("Sumbit? (Y/N): ", 'Y', 'N')
                 # Upon submission, update the .csv and append the new dict to s.card_list manually
@@ -125,7 +129,7 @@ def main():
             print("\nWow, such an enterprising option! In order to create a brand new subject, you'll just need a subject name, the information fields you want to be tested on, and one full flashcard with whichto start it off. Follow these step by step instructions, and don't worry, you'll get a chance to review everything at the end!")
             while True:
                 # Prompt user for subject name, since it will be used as a file name it is first cleaned and validated
-                new_subject = input("\nFirst, enter the cool name you picked for the new subject you wish to add\nSubject: ")
+                new_subject = input("\nFirst, enter the cool name you picked for the new subject you wish to add\n\nSubject: ")
                 if new_subject == "":
                     print("Your subject needs a name! Do you want to retry your subject submission?")
                     retry = choose("Submit 'AGAIN' to try again or 'RETURN' to go back to the top menu: ", 'AGAIN', 'RETURN')
@@ -148,7 +152,7 @@ def main():
                             break
 
                 # Prompt user for the new subject's fields and clean them
-                new_fields = input("\nNext, input the names of each nifty field you wish the subject to contain in a single list separated by commas (Ex: 'color, shape, size')\n(WARNING: Any input separated by commas will count each side of the comma as separate entries, use commas with caution!)\nFields: ").split(",")
+                new_fields = input("\nNext, input the names of each nifty field you wish the subject to contain in a single list separated by commas (Ex: 'color, shape, size')\n!! WARNING: Any input separated by commas will count each side of the comma as separate entries, use commas with caution !!\n\nFields: ").split(",")
                 for _ in range(len(new_fields)):
                     if new_fields[_] == "":
                         new_fields.remove(new_fields[_])
@@ -163,12 +167,12 @@ def main():
                         break
 
                 # Prompt user to generate a card with the new fields then check with user that all entered data is valid
-                print("\nAlready amazing, and just one more step to go! Finally, fill out your new subject's first flashcard")
+                print("\nAlready amazing, and just one more step to go! Finally, fill out your new subject's first flashcard. Once again, for multiple entries in one field, separate each entry with a comma\n")
                 new_card = create_card(new_fields)
-                print("Would you like to initiate your new subject using the following flashcard? Once you have it will be availble to select from the list of subjects by typing 'CHANGE' into the main menu.\n")
+                print("\nWould you like to initiate your new subject using the following flashcard? Once you have it will be availble to select from the list of subjects by typing 'CHANGE' into the main menu.\n")
                 print(f"- -- {string.capwords(new_subject)} -- -\n")
                 print(new_card)
-                okay = choose("Create Subject? (Y/N): ", 'Y', 'N').strip()
+                okay = choose("\nCreate Subject? (Y/N): ", 'Y', 'N').strip()
 
                 # After reviewing data, allow user to submit the new subject, retry, or exit
                 if okay == "Y":
@@ -178,7 +182,7 @@ def main():
                         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
                         writer.writeheader()
                         writer.writerow(new_card.dict)
-                        print("Absolutely astounding! This amazing new subject can now be choose from the available list of subjects using the 'CHANGE' task in the main menu.")
+                        print("\nAbsolutely astounding! This amazing new subject can now be choose from the available list of subjects using the 'CHANGE' task in the main menu.")
                     break
                 elif okay == "N":
                     try_again = choose("Submit 'AGAIN' to try again or 'RETURN' to go back to the top menu: ", 'AGAIN', 'RETURN')
@@ -282,30 +286,37 @@ def choose_subject():
     return Subject(subject, card_list, keys)
 
 
-#TODO regex & text
-#NOTE Regex might simplify a lot of this program, need to rewatch regex lecture
+#NOTE create_card COMMENTED, TEXT CHECKED, ERROR TESTED
 def create_card(fields):
     # Create_card takes a subject's fields and generates an input prompt for each one, checking for valid formating 
     # and returning a Card object
     
-# NOTE include warning about not using the @ symbol, maybe pick a better symbol?
+    counter = 0
     while True:
         # Create and empty dict and begin setting variables
         card = {}
         card["card_title"] = input("Card Title: ").strip().lower()
         retry = False
+        
         for field in fields:
-            # Fields are invalid if the are empty or contain an @ symbol
+            # Fields are invalid if the are empty, begin or end with a ~ symbol, or contain three ~'s in a row`
             if field != "":
                 value = input(f"{string.capwords(field)}: ")
-# NOTE I can definitely use regex to only exclude the exact sequence instead of all @'s
-            if "@" in value:
-                print("Please don't include '@' character in your entry, it jams me up good")
+            else:
+                raise Exception("The field name was empty, which shouldn't be possible but here we are!")
+            if re.search("^~", value) or re.search("~$", value):
+                print("Please don't begin or end your entry with the '~' character, it jams me up good")
                 retry = True
                 break
-            elif value == "":
-                print("Please don't leave any selection blank, input 'none' instead")
+            if re.search("~~~", value):
+                print("Please don't include '~~~' in your entry, it jams me up good")
                 retry = True
+                counter += 1
+                break
+            elif value == "":
+                print("Please don't leave any selection blank, you can just input 'none' instead good buddy!")
+                retry = True
+                counter += 1
                 break
 
             # Handle multiple values by converting to my formatting
@@ -315,35 +326,50 @@ def create_card(fields):
                 if _.strip().lower() != "":
                     entries.append(_.strip().lower())
    
-            # Single entry inputs will be returned as is, multi-entry inputs will be reformatted with @@@ separators
-            entry = "@@@".join(entries)
+            # Single entry inputs will be returned as is, multi-entry inputs will be reformatted with ~~~ separators
+            entry = "~~~".join(entries)
             card[field] = entry
         
         # If field input is invalid, automatically reprompts
         if retry == True:
-            print("Let's try that again....\n")
-            continue
+            if counter == 3:
+                backout = choose("\nThat's three retries, would you like to back out of adding a new card? (Y/N): ", 'Y', 'N')
+                if backout == 'Y':
+                    return False
+                elif backout == 'N':
+                    counter = 0
+                    continue
+            else:
+                print("Let's try that again....\n")
+                continue
         return Card(card)
 
-# TODO make it break out of the program after X incorrect tries
+
 #NOTE val_num_input COMMENTED, TEXT CHECKED, ERROR TESTED
 def val_num_input(string, options):
     # val_num_input prompts the user to input the numeric index of a list of options, then validates that the input
     # is an integer within the range, returning the integer to be used to index the actual list.
-
+    tries = 0
     while True:
+        if tries == 3:
+            print("Warning! One more improper input and the program will exit. I believe in you!")
+        if tries == 4:
+            raise UserShenanigans
         if options == [] or type(options) != list:
             raise Exception("Well that's just not possible. Either you're screwing around, or I've made a terrible mistake.")
         try:
             answer = float(input(string).strip())
         except ValueError:
-            print("Ok that wasn't even one number, are you really trying?")
+            print("Ok that wasn't even a proper number, are you really trying? Here's a hint, it's one of these->123456789")
+            tries += 1
             continue
         if answer % 1 != 0:
             print("A fraction? Seriously? Now you're just being silly.")
+            tries += 1
             continue
         if not 1 <= answer <= len(options):
-            print("That number wasn't in the range and I think you know it!")
+            print("That number wasn't in the range of numbers and I think you know it!")
+            tries += 1
             continue
         return int(answer)
 
@@ -352,10 +378,17 @@ def val_num_input(string, options):
 def choose(prompt, arg1, arg2):
     # Choose automates asking a prompt in a while loop to allow reprompting, returning only one of the correct options
     # It can't be broken except by input one of the correct options 
+   
+    tries = 0
     while True:
+        if tries == 3:
+            print("Warning! One more improper input and the program will exit. I believe in you!")
+        if tries == 4:
+            raise UserShenanigans
         choice = input(prompt).strip()
         if choice not in [arg1, arg2]:
-            print("Invalid input. Please only input one of the stated options exactly as written\n")
+            print("\nInvalid input. Please only input one of the stated options exactly as written (case sensitively!)\n")
+            tries += 1
             continue
         else:
             break
@@ -364,6 +397,12 @@ def choose(prompt, arg1, arg2):
     else:
         return arg2
 
+
+class UserShenanigans(Exception):
+    def __init__(self):
+        self.message = "Program exitted due to excessive silliness(you know what you did). It's been a pleasure nonetheless!"
+    def __str__(self):
+        return self.message        
 
 if __name__ == "__main__":
     main()

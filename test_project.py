@@ -7,11 +7,6 @@ def test_choose_subject():
     return
     
 
-def test_the():
-    #TODO takes a card dict and returns a flashcard string
-    return
-    
-
 def test_create_card():
     #TODO takes a list of field names and returns a filled out
     return

@@ -1,7 +1,10 @@
-import string
+import string, re
 
 
 class Subject:
+    # The subject class stores the relvant info about the currently selected csv file, it's filepath, the list of dicts 
+    # for each card, and the dict keys, to make it easily accessible to different parts of the program
+
     def __init__(self, path, card_list, keys):
         self.path = path
         self.card_list = card_list
@@ -13,7 +16,7 @@ class Subject:
         self.fields = fields
     
     def get_list(self, field):
-        # Set an empty list to store all existing values for the relevant key, using set() to remove duplicates
+        # Takes one of the fields, aka csv column names, and gathers a list of every unique entry in all rows.
         full_list = []
         for row in self.card_list:
             c = Card(row)
@@ -22,11 +25,19 @@ class Subject:
         full_list = set(full_list)
         return list(full_list)
 
-#TODO Prevent anything but a properly formatted dict to be used to initiate a Card within the class itself
 class Card:
+    # The card class stores the relevant info of the currently selected dict, it's fields, title, and the actual 
+    # dict object used to initiate the card, varifying that it's properly formatted. It then allows easy gathering of 
+    # the entries for each field, and the ability to print the card using my specific graphic formatting.
+
     def __init__(self, card):
+        if not isinstance(card, dict):
+            raise Exception("Tried to create a card with an improper input.")
         self.dict = card
-        self.title = card['card_title']
+        try:
+            self.title = card['card_title']
+        except KeyError:
+            print("The input dict wasn't formatted properly to create a card.")
         fields = []
         for key in list(card.keys()):
             if key != 'card_title':
@@ -34,12 +45,11 @@ class Card:
         self.fields = fields
 
     def gather(self, field):
-        var = self.dict[field].split("@@@")
         try:
-            list_var = list(var)
-        except:
-            raise ValueError("var couldn't be listified! I'm mystified!")
-        return list_var
+            entry = self.dict[field]
+        except KeyError:
+            print("The input field wasn't part of the card. How did you do that, seriously?")
+        return re.split("~~~", entry)
 
     def __str__(self):
         printable = list(f"-------- ----- --- -- - -\n-- - {string.capwords(self.title)} - --\n")
