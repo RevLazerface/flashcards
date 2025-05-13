@@ -1,26 +1,23 @@
-from extras import Subject, Card
 from pathvalidate import sanitize_filename
 import os, sys, random, csv, string, re
 
-# !*TODO*! On the list: 
-# - Set up test_project.py
-# - Wishlist: card editing, card removal
-
-
-# This program is a terminal based flashcard studying program that allows users review cards, test themselves on the 
-# card's contents, add new cards, and change or even create entirely new subjects. They can review one card at a time 
-# or all cards simultaneously, and the test randomly generates multiple choice questions, once for a randomly selected
-# field on each card. The program requires the relevant .csv files to be stored in a folder within the main directory
-# entitled "subjects" and each .csv must have one column titled "card_title". The text-based user interface is fairly 
-# simplistic and rigid, with the user required to input commands exactly as instructed. The cards and subject, however,
-# are left to the user to input as they see fit with few limitations.
-    
+"""
+This program is a terminal based flashcard studying program that allows users review cards, test themselves on the 
+card's contents, add new cards, and change or even create entirely new subjects. They can review one card at a time 
+or all cards simultaneously, and the test randomly generates multiple choice questions, once for a randomly selected
+field on each card. The program requires the relevant .csv files to be stored in a folder within the main directory
+entitled "subjects" and each .csv must have one column titled "card_title". The text-based user interface is fairly 
+simplistic and rigid, with the user required to input commands exactly as instructed. The cards and subject, however,
+are left to the user to input as they see fit with few limitations.
+""" 
    
 def main():
-    # Main() initiates the flashcard session and then acts as a main menu from which the user decides which 
-    # of the program's tasks they want to undertake. All of the tasks return the user to this main 
-    # menu once completed so that the user can take perform another task or exit.
-
+    """
+    Main() initiates the flashcard session and then acts as a main menu from which the user decides which 
+    of the program's tasks they want to undertake. All of the tasks return the user to this main 
+    menu once completed so that the user can take perform another task or exit.
+    """
+    
     # Greet user and initiate the desired subject as a Subject object
     print("\nHail and well met! Welcome to flashcards.py! Before we begin, kindly pick a subject from the list:\n")
     s = choose_subject()
@@ -35,7 +32,7 @@ def main():
         # Choose what task is to be performed, returning to this prompt once concluded, or exitting on exit input
         print("\n  - -- Menu -- -\n- Submit 'REVIEW' to review flashcards\n- Submit 'TEST' to take the test\n- Submit 'ADD' to add a flashcard\n- Submit 'CHANGE' to change subjects\n- Submit 'CREATE' to create a new subject\n- Submit 'EXIT' to exit the program")
         task = input("\nSubmit: ").strip()
-#NOTE REVIEW COMMENTED, TEXT CHECKED, ERROR TESTED
+
         if task == 'REVIEW':
             while True:
                 # Select whether to review one or all cards
@@ -64,11 +61,11 @@ def main():
                 next = choose("Submit 'AGAIN' to review again or 'RETURN' to go back to the top menu: ", 'AGAIN', 'RETURN')
                 if next == 'AGAIN':
                     continue
-                elif next == 'RETURN':
+                else:
                     break
             continued = 1
             continue
-#NOTE TEST COMMENTED, TEXT CHECKED, ERROR TESTED
+
         elif task == 'TEST':       
             # Generate a random question for each card in a random order, tracking correct answers
             print("\n- -- Test Instructions -- -\nWhat a bold selection! In this test you will be presented with a multiple choice question about each card in this subject. Each multiple choice question will be randomly generated from one of the fields on each card. Simply input the numeral of what you believe to be the correct answer. For questions with multiple correct answers, input each correct answer one at a time.\n")
@@ -81,11 +78,12 @@ def main():
                 print(f"Question {q_num}\n")
                 if random_q(_, s):
                     correct += 1
+            
             # Print results and return to menu
             print(f"Results: {correct}/{q_num} correct answers\n")  
             continued = 1
             continue
-#NOTE ADD COMMENTED, TEXT CHECKED, ERROR TESTED
+
         elif task == 'ADD':
             while True:
                 # Allow user to generate a new card based on the current subject and review the card before submitting
@@ -113,18 +111,18 @@ def main():
                 what_now = choose("Submit 'AGAIN' to try again or 'RETURN' to go back to the top menu: ", 'AGAIN', 'RETURN')
                 if what_now == 'AGAIN':
                     continue
-                elif what_now == 'RETURN':
+                else:
                     break
             continued = 1
             continue
-#NOTE CHANGE COMMENTED, TEXT CHECKED, ERROR TESTED
+
         elif task == 'CHANGE':
             # Choose new subject and update the primary subject object
             print('What a concept! We could all use a little change. Choose from one of the following:')
             s = choose_subject()
             continued = 1
             continue
-#NOTE CREATE COMMENTED, TEXT CHECKED, ERROR TESTED
+
         elif task == 'CREATE':
             print("\nWow, such an enterprising option! In order to create a brand new subject, you'll just need a subject name, the information fields you want to be tested on, and one full flashcard with whichto start it off. Follow these step by step instructions, and don't worry, you'll get a chance to review everything at the end!")
             while True:
@@ -135,20 +133,20 @@ def main():
                     retry = choose("Submit 'AGAIN' to try again or 'RETURN' to go back to the top menu: ", 'AGAIN', 'RETURN')
                     if retry == 'AGAIN':
                         continue
-                    elif retry == 'RETURN':
+                    else:
                         break
                 sani_subject = sanitize_filename(new_subject)
                 if new_subject != sani_subject:
                     print(f"Cool though it was, your subject name contained some invalid characters that had to be removed. Is this subject name ok?\nNew name: {string.capwords(sani_subject)}")
-                    val_sub = choose("Sumbit? (Y/N): ", 'Y', 'N')
+                    val_sub = choose("Submit? (Y/N): ", 'Y', 'N')
                     if val_sub == 'Y':
                         new_subject = sani_subject
-                    elif val_sub == 'N':
+                    else:
                         print("Do you want to retry your subject submission?")
                         retry = choose("Submit 'AGAIN' to try again or 'RETURN' to go back to the top menu: ", 'AGAIN', 'RETURN')
                         if retry == 'AGAIN':
                             continue
-                        elif retry == 'RETURN':
+                        else:
                             break
 
                 # Prompt user for the new subject's fields and clean them
@@ -163,7 +161,7 @@ def main():
                     retry = choose("Submit 'AGAIN' to try again or 'RETURN' to go back to the top menu: ", 'AGAIN', 'RETURN')
                     if retry == 'AGAIN':
                         continue
-                    elif retry == 'RETURN':
+                    else:
                         break
 
                 # Prompt user to generate a card with the new fields then check with user that all entered data is valid
@@ -188,11 +186,11 @@ def main():
                     try_again = choose("Submit 'AGAIN' to try again or 'RETURN' to go back to the top menu: ", 'AGAIN', 'RETURN')
                     if try_again == "AGAIN":
                         continue
-                    elif try_again == "RETURN":
+                    else:
                         break
             continued = 1
             continue
-#NOTE EXIT COMMENTED, TEXT CHECKED, ERROR TESTED
+
         elif task == 'EXIT':
             sys.exit("\nThat was gorgeous, you're gorgeous, stay gorgeous.\n")
         else:
@@ -200,10 +198,11 @@ def main():
             continued = 0
             continue
 
-#NOTE random_q COMMENTED, TEXT CHECKED, ERROR TESTED
 def random_q(card, subject):
-    # Random_q creates a randomly generated question for a given card, returning True for a correct answer and False 
-    # for and incorrect answer
+    """
+    Random_q creates a randomly generated question for a given card, returning True for a correct answer and False 
+    for and incorrect answer
+    """
 
     # Set the title and fields as variables and pick a random field to generate a question from
     q_card = Card(card)
@@ -247,30 +246,28 @@ def random_q(card, subject):
             return False
     return True
 
-
-#NOTE choose_subject COMMENTED, TEXT CHECKED, ERROR TESTED
 def choose_subject():
-    # Choose_subject presents a list of all .csv files located in the subjects folder and allows the user to 
-    # select one, returning the path to said file as well as the list of dictionaries and the column names which 
-    # are then fed into main's other functions 
+    """
+    Choose_subject presents a list of all .csv files located in the "subjects" folder and allows the user to 
+    select one, returning the path to said file as well as the list of dictionaries and the column names which 
+    are then fed into main's other functions 
+    """
     
     # Retrieve path to the folder by adding the folder name to the main directory path
     script_dir = os.path.dirname(__file__)
-    subs = "subjects"
-    path = os.path.join(script_dir, subs)
+    path = os.path.join(script_dir, "subjects")
 
     # Get file names from folder and print them one by one, properly formatted, with index numbers
     file_names = os.listdir(path)
+    sub_list = get_subjects(file_names)
     counter = 1
-    print("Subjects:\n")
-    for file in file_names:
-        if file.endswith(".csv"):
-            print(f"- {counter} - {string.capwords(file.removesuffix('.csv').replace('_', ' '))}")
-            counter += 1
+    for sub in sub_list:
+        print(f"- {counter} - {sub}")
+        counter += 1
 
     # Read the selected .csv, checking for proper formatting, and use the data to initiate and return a Subject object 
     choice = val_num_input("\nEnter the corresponding number for your desired subject: ", file_names) - 1
-    subject = "/".join([subs, file_names[choice]])
+    subject = "/".join(["subjects", file_names[choice]])
     try:
         with open(subject, mode='r') as csv_file:
             csv_reader = csv.DictReader(csv_file)
@@ -285,11 +282,11 @@ def choose_subject():
 
     return Subject(subject, card_list, keys)
 
-
-#NOTE create_card COMMENTED, TEXT CHECKED, ERROR TESTED
 def create_card(fields):
-    # Create_card takes a subject's fields and generates an input prompt for each one, checking for valid formating 
-    # and returning a Card object
+    """
+    Create_card takes a subject's fields and generates an input prompt for each one, checking for valid formating 
+    and returning a Card object
+    """
     
     counter = 0
     while True:
@@ -319,15 +316,8 @@ def create_card(fields):
                 counter += 1
                 break
 
-            # Handle multiple values by converting to my formatting
-            values = list(value.split(","))
-            entries = []
-            for _ in values:
-                if _.strip().lower() != "":
-                    entries.append(_.strip().lower())
-   
-            # Single entry inputs will be returned as is, multi-entry inputs will be reformatted with ~~~ separators
-            entry = "~~~".join(entries)
+            # Handle multiple values by converting to my formatting if necessary then stores the entry
+            entry = set_entry(value)
             card[field] = entry
         
         # If field input is invalid, automatically reprompts
@@ -336,7 +326,7 @@ def create_card(fields):
                 backout = choose("\nThat's three retries, would you like to back out of adding a new card? (Y/N): ", 'Y', 'N')
                 if backout == 'Y':
                     return False
-                elif backout == 'N':
+                else:
                     counter = 0
                     continue
             else:
@@ -344,11 +334,12 @@ def create_card(fields):
                 continue
         return Card(card)
 
-
-#NOTE val_num_input COMMENTED, TEXT CHECKED, ERROR TESTED
 def val_num_input(string, options):
-    # val_num_input prompts the user to input the numeric index of a list of options, then validates that the input
-    # is an integer within the range, returning the integer to be used to index the actual list.
+    """
+    val_num_input() prompts the user to input the numeric index of a list of options, then validates that the input
+    is an integer within the range, returning the integer to be used to index the actual list.
+    """
+
     tries = 0
     while True:
         if tries == 3:
@@ -373,12 +364,12 @@ def val_num_input(string, options):
             continue
         return int(answer)
 
-
-#NOTE choose COMMENTED, TEXT CHECKED, ERROR TESTED
 def choose(prompt, arg1, arg2):
-    # Choose automates asking a prompt in a while loop to allow reprompting, returning only one of the correct options
-    # It can't be broken except by input one of the correct options 
-   
+    """
+    Choose automates asking a prompt in a while loop to allow reprompting, returning only one of the correct options
+    It can't be broken except by input one of the correct options 
+    """
+
     tries = 0
     while True:
         if tries == 3:
@@ -397,12 +388,96 @@ def choose(prompt, arg1, arg2):
     else:
         return arg2
 
+def set_entry(value):
+    values = list(value.split(","))
+    entries = []
+    for _ in values:
+        if _.strip().lower() != "":
+            entries.append(_.strip().lower())
+    entry = "~~~".join(entries)
+    return entry
+
+def get_subjects(file_names):
+    sub_list = []
+    for file in file_names:
+        if file.endswith(".csv"):
+            sub = string.capwords(file.removesuffix('.csv').replace('_', ' '))
+            sub_list.append(sub)
+    return sub_list
 
 class UserShenanigans(Exception):
+    '''
+    Custom class made for exceptions that should realistically be out of the users control to create through the scripts basic 
+    functionality. Recieving this error should only be possible by messing with the code directly.
+    ''' 
+
     def __init__(self):
         self.message = "Program exitted due to excessive silliness(you know what you did). It's been a pleasure nonetheless!"
     def __str__(self):
         return self.message        
+
+class Subject:
+    """
+    The subject class stores the relvant info about the currently selected csv file, it's filepath, the list of dicts 
+    for each card, and the dict keys, to make it easily accessible to different parts of the program
+    """
+
+    def __init__(self, path, card_list, keys):
+        self.path = path
+        self.card_list = card_list
+        self.keys = keys
+        fields = []
+        for key in keys:
+            if key != 'card_title':
+                fields.append(key)
+        self.fields = fields
+    
+    def get_list(self, field):
+        # Takes one of the fields, aka csv column names, and gathers a list of every unique entry in all rows.
+        full_list = []
+        for row in self.card_list:
+            c = Card(row)
+            entries = c.gather(field)
+            full_list.extend(entries)
+        full_list = set(full_list)
+        return list(full_list)
+    re
+
+class Card:
+    """
+    The card class stores the relevant info of the currently selected dict, it's fields, title, and the actual 
+    dict object used to initiate the card, varifying that it's properly formatted. It then allows easy gathering of 
+    the entries for each field, and the ability to print the card using my specific graphic formatting.
+    """
+
+    def __init__(self, card):
+        if not isinstance(card, dict):
+            raise Exception("Tried to create a card with an improper input.")
+        self.dict = card
+        try:
+            self.title = card['card_title']
+        except KeyError:
+            print("The input dict wasn't formatted properly to create a card.")
+        fields = []
+        for key in list(card.keys()):
+            if key != 'card_title':
+                fields.append(key)
+        self.fields = fields
+
+    def gather(self, field):
+        try:
+            entry = self.dict[field]
+        except KeyError:
+            print("The input field wasn't part of the card. How did you do that, seriously?")
+        return re.split("~~~", entry)
+
+    def __str__(self):
+        printable = list(f"-------- ----- --- -- - -\n-- - {string.capwords(self.title)} - --\n")
+        for field in self.fields:
+            printable.append(f"- {string.capwords(field)}: {string.capwords(', '.join(self.gather(field)))}\n")
+        printable.append("-------- ----- --- -- - -\n")
+        full_card = "".join(printable)
+        return full_card
 
 if __name__ == "__main__":
     main()
